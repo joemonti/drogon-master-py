@@ -61,9 +61,7 @@ class DrogonModuleManager(object):
         self.logger.debug('Module %s Loaded' % ( module_name ))
     
     def load_modules(self):
-        module_list = self.get_module_list()
-        
-        for module_name in module_list:
+        for module_name in self.get_module_list():
             self.load_module(module_name)
     
     def shutdown(self):
@@ -71,7 +69,7 @@ class DrogonModuleManager(object):
             self.logger.debug('Module %s Shutting Down' % ( name ))
             m.shutdown()
     
-    def running_modules(self):
+    def get_running_modules_count(self):
         return len([1 for m in self.modules.iteritems() if isinstance(m, drogonmodule.DrogonModuleRunnable) and m.isAlive()])
 
 def main():
@@ -85,7 +83,8 @@ def main():
     while running:
         try:
             if interrupted:
-                if ( time.time() - interruptTime ) > 5.0 or mm.running_modules() == 0:
+                # wait 5 seconds or until all running modules stop running
+                if ( time.time() - interruptTime ) > 5.0 or mm.get_running_modules_count() == 0:
                     running = False
                 else:
                     time.sleep(0.1)

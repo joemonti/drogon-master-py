@@ -31,7 +31,7 @@ import drogonmodule
 SERVER_IP = "0.0.0.0"
 SERVER_PORT = 42112
 
-MAX_FPS=5
+MAX_FPS=5.0
 
 class CameraModule(drogonmodule.DrogonModuleRunnable):
     def __init__(self, *args, **kwargs):

@@ -21,6 +21,7 @@ along with Drogon.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import logging
+import datetime
 
 FORMAT='%(asctime)s %(levelname)-6s %(message)s'
 
@@ -35,7 +36,8 @@ class DrogonLogger(object):
             return self.loggers[name]
         
         logger = logging.getLogger( name )
-        handler = logging.FileHandler('%s/%s.log' % ( LOGDIR, name ))
+        dateString = datetime.datetime.now().strftime('%Y-%m-%d')
+        handler = logging.FileHandler('%s/%s-%s.log' % ( LOGDIR, name, dateString ))
         handler.setFormatter(logging.Formatter(FORMAT))
         logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
