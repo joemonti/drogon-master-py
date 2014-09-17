@@ -39,20 +39,19 @@ class ArduinoModule(drogonmodule.DrogonModuleRunnable):
         ser = serial.Serial(SERIAL_PORT, SERIAL_BAUD, timeout=1)
         ser.open()
         
-        try:
-            while True:
-                response = ser.readline()
-                if response is not None:
-                    response = response.strip()
-                    if len(response) > 0:
-                        if response[0] == 'D':
-                            self.loggerDebug.debug(response)
-                        elif response[0] == 'P':
-                            self.loggerTuner.debug(response)
-                        else:
-                            self.logger.debug(response)
-        except KeyboardInterrupt:
-            ser.close()
+        while self.running:
+            response = ser.readline()
+            if response is not None:
+                response = response.strip()
+                if len(response) > 0:
+                    if response[0] == 'L':
+                        self.loggerDebug.debug(response)
+                    elif response[0] == 'P':
+                        self.loggerTuner.debug(response)
+                    else:
+                        self.logger.debug(response)
+        
+        ser.close()
 
 # THIS EXPOSES THE MODULE CLASS TO THE MODULE LOADER
 moduleclass = ArduinoModule
