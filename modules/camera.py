@@ -47,7 +47,7 @@ class CameraModule(drogonmodule.DrogonModuleRunnable):
                 s.bind((SERVER_IP, SERVER_PORT))
                 s.listen(1)
                 conn, addr = s.accept()
-                self.logger.debug('Connection Opened: %s' % ( addr ))
+                self.logger.debug('Connection Opened: %s' % ( str(addr) ))
                 connfile = conn.makefile('wb')
                 with picamera.PiCamera() as camera:
                     camera.resolution = (640, 480)
@@ -58,7 +58,7 @@ class CameraModule(drogonmodule.DrogonModuleRunnable):
                     stream = io.BytesIO()
                     lastFrame = time.time()
                     for foo in camera.capture_continuous(stream, 'jpeg', use_video_port=True):
-                        connfile.write(struct.pack('<L', stream.tell()))
+                        connfile.write(struct.pack('>L', stream.tell()))
                         connfile.flush()
                         stream.seek(0)
                         connfile.write(stream.read())
@@ -77,7 +77,7 @@ class CameraModule(drogonmodule.DrogonModuleRunnable):
                             time.sleep(sleepTime)
                         lastFrame = time.time()
                 
-                self.logger.debug('Connection Closed: %s' % ( addr ))
+                self.logger.debug('Connection Closed: %s' % ( str(addr) ))
                 conn.close()
             except:
                 self.logger.exception("Exception in connection")
