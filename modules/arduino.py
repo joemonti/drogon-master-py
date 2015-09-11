@@ -24,21 +24,22 @@ import serial
 
 import drogonmodule
 
-SERIAL_PORT='/dev/ttyAMA0'
-SERIAL_BAUD=9600
+SERIAL_PORT = '/dev/ttyAMA0'
+SERIAL_BAUD = 9600
+
 
 class ArduinoModule(drogonmodule.DrogonModuleRunnable):
     def __init__(self, *args, **kwargs):
         super(ArduinoModule, self).__init__(*args, **kwargs)
-        
+
         self.logger = self.get_logger()
         self.loggerDebug = self.get_logger('debug')
         self.loggerTuner = self.get_logger('tuner')
-    
+
     def run(self):
         ser = serial.Serial(SERIAL_PORT, SERIAL_BAUD, timeout=1)
         ser.open()
-        
+
         while self.running:
             response = ser.readline()
             if response is not None:
@@ -50,9 +51,8 @@ class ArduinoModule(drogonmodule.DrogonModuleRunnable):
                         self.loggerTuner.debug(response)
                     else:
                         self.logger.debug(response)
-        
+
         ser.close()
 
 # THIS EXPOSES THE MODULE CLASS TO THE MODULE LOADER
 moduleclass = ArduinoModule
-

@@ -22,41 +22,42 @@ along with Drogon.  If not, see <http://www.gnu.org/licenses/>.
 
 import threading
 
+
 class DrogonModule(object):
     def __init__(self, *args, **kwargs):
         self.name = kwargs['name']
         self.dl = kwargs['dl']
-        
+
         self.loggers = {}
-    
+
     def get_logger(self, name=''):
         loggerName = self.name
         if len(name) > 0:
-            loggerName = '%s-%s' % ( loggerName, name)
-        
+            loggerName = '%s-%s' % (loggerName, name)
+
         return self.dl.get_logger(loggerName)
-        
+
     def shutdown(self):
         pass
+
 
 class DrogonModuleRunnable(DrogonModule):
     def __init__(self, *args, **kwargs):
         super(DrogonModuleRunnable, self).__init__(*args, **kwargs)
-        
+
         self.thread = threading.Thread(target=self.run)
         self.thread.daemon = True
         self.running = False
-    
+
     def start(self):
         self.running = True
         self.thread.start()
-    
+
     def isAlive(self):
         return self.thread.isAlive()
-    
+
     def shutdown(self):
         self.running = False
-    
+
     def run(self):
         pass
-

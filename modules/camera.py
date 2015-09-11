@@ -31,15 +31,16 @@ import drogonmodule
 SERVER_IP = "0.0.0.0"
 SERVER_PORT = 42112
 
-MAX_FPS=5
+MAX_FPS = 5
+
 
 class CameraModule(drogonmodule.DrogonModuleRunnable):
     def __init__(self, *args, **kwargs):
         super(CameraModule, self).__init__(*args, **kwargs)
-        
+
         self.logger = self.get_logger()
         self.frame_delay = 1/MAX_FPS
-    
+
     def run(self):
         while self.running:
             try:
@@ -47,7 +48,7 @@ class CameraModule(drogonmodule.DrogonModuleRunnable):
                 s.bind((SERVER_IP, SERVER_PORT))
                 s.listen(1)
                 conn, addr = s.accept()
-                self.logger.debug('Connection Opened: %s' % ( str(addr) ))
+                self.logger.debug('Connection Opened: %s' % (str(addr)))
                 connfile = conn.makefile('wb')
                 with picamera.PiCamera() as camera:
                     camera.resolution = (640, 480)
@@ -65,19 +66,19 @@ class CameraModule(drogonmodule.DrogonModuleRunnable):
                         connfile.flush()
                         stream.seek(0)
                         stream.truncate()
-                        
+
                         resp = conn.recv(1)
                         if not self.running or resp == None or len(resp) == 0 or ord(resp[0]) == 0x04:
                             break
                         elif ord(resp[0]) != 0x02:
-                            self.logger.warn('Invalid response: %s' % ( resp ))
-                        
-                        sleepTime = self.frame_delay - ( time.time() - lastFrame )
+                            self.logger.warn('Invalid response: %s' % (resp))
+
+                        sleepTime = self.frame_delay - (time.time() - lastFrame)
                         if sleepTime > 0.0:
                             time.sleep(sleepTime)
                         lastFrame = time.time()
-                
-                self.logger.debug('Connection Closed: %s' % ( str(addr) ))
+
+                self.logger.debug('Connection Closed: %s' % (str(addr)))
                 conn.close()
             except:
                 self.logger.exception("Exception in connection")
@@ -86,4 +87,3 @@ class CameraModule(drogonmodule.DrogonModuleRunnable):
 
 # THIS EXPOSES THE MODULE CLASS TO THE MODULE LOADER
 moduleclass = CameraModule
-
