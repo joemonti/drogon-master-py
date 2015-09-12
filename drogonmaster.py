@@ -21,25 +21,26 @@ along with Drogon.  If not, see <http://www.gnu.org/licenses/>.
 @copyright: 2014 Joseph Monti All Rights Reserved, http://joemonti.org/
 """
 
-#import sys
+# import sys
 import time
 import importlib
 
 import drogonmodule
 
 import modules
-#from modules import *
+# from modules import *
 
 from drogonlogger import DrogonLogger
 
 MODULES_FNAME = 'modules.load'
+
 
 class DrogonModuleManager(object):
     def __init__(self, dl):
         self.logger = dl.get_logger('module-manager')
         self.dl = dl
         self.modules = {}
-    
+
     def get_module_list(self):
         module_list = []
         with open(MODULES_FNAME) as f:
@@ -48,43 +49,49 @@ class DrogonModuleManager(object):
                 if len(line) > 0 and line[0] != '#':
                     module_list.append(line)
         return module_list
-    
+
     def load_module(self, module_name):
-        self.logger.debug('Module %s Loading' % ( module_name ))
-        importlib.import_module('modules.%s' % ( module_name ))
-        m = modules.__dict__[module_name].moduleclass(name=module_name, dl=self.dl)
-        
+        self.logger.debug('Module %s Loading' % (module_name))
+        importlib.import_module('modules.%s' % (module_name))
+        m = modules.__dict__[module_name].moduleclass(name=module_name,
+                                                      dl=self.dl)
+
         if isinstance(m, drogonmodule.DrogonModuleRunnable):
             m.start()
-            
+
         self.modules[module_name] = m
-        self.logger.debug('Module %s Loaded' % ( module_name ))
-    
+        self.logger.debug('Module %s Loaded' % (module_name))
+
     def load_modules(self):
-        for module_name in self.get_module_list():
+        module_list = self.get_module_list()
+
+        for module_name in module_list:
             self.load_module(module_name)
-    
+
     def shutdown(self):
-        for (name,m) in self.modules.iteritems():
-            self.logger.debug('Module %s Shutting Down' % ( name ))
+        for (name, m) in self.modules.iteritems():
+            self.logger.debug('Module %s Shutting Down' % (name))
             m.shutdown()
-    
-    def get_running_modules_count(self):
-        return len([1 for m in self.modules.iteritems() if isinstance(m, drogonmodule.DrogonModuleRunnable) and m.isAlive()])
+
+    def running_modules(self):
+        return len([1 for m in self.modules.iteritems()
+                    if isinstance(m, drogonmodule.DrogonModuleRunnable) and
+                    m.isAlive()])
+
 
 def main():
     dl = DrogonLogger()
     mm = DrogonModuleManager(dl)
     mm.load_modules()
-    
+
     interrupted = False
     running = True
     interruptTime = None
     while running:
         try:
             if interrupted:
-                # wait 5 seconds or until all running modules stop running
-                if ( time.time() - interruptTime ) > 5.0 or mm.get_running_modules_count() == 0:
+                if (time.time() - interruptTime) > 5.0 or \
+                        mm.running_modules() == 0:
                     running = False
                 else:
                     time.sleep(0.1)
@@ -99,4 +106,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

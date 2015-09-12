@@ -20,4 +20,4 @@ along with Drogon.  If not, see <http://www.gnu.org/licenses/>.
 @copyright: 2014 Joseph Monti All Rights Reserved, http://joemonti.org/
 """
 
-__all__ = [ ]
+__all__ = []

@@ -23,25 +23,25 @@ along with Drogon.  If not, see <http://www.gnu.org/licenses/>.
 import logging
 import datetime
 
-FORMAT='%(asctime)s %(levelname)-6s %(message)s'
+FORMAT = '%(asctime)s %(levelname)-6s %(message)s'
 
 LOGDIR = 'log'
+
 
 class DrogonLogger(object):
     def __init__(self):
         self.loggers = {}
-    
+
     def get_logger(self, name):
         if name in self.loggers:
             return self.loggers[name]
-        
-        logger = logging.getLogger( name )
+        logger = logging.getLogger(name)
         dateString = datetime.datetime.now().strftime('%Y-%m-%d')
-        handler = logging.FileHandler('%s/%s-%s.log' % ( LOGDIR, name, dateString ))
+        handler = logging.FileHandler('%s/%s-%s.log' % (LOGDIR, name, dateString))
         handler.setFormatter(logging.Formatter(FORMAT))
         logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
-        
+
         self.loggers[name] = logger
-        
+
         return logger
