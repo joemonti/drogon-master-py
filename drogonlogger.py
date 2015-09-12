@@ -35,9 +35,12 @@ class DrogonLogger(object):
     def get_logger(self, name):
         if name in self.loggers:
             return self.loggers[name]
+
         logger = logging.getLogger(name)
+
         dateString = datetime.datetime.now().strftime('%Y-%m-%d')
-        handler = logging.FileHandler('%s/%s-%s.log' % (LOGDIR, name, dateString))
+        handler = logging.FileHandler('%s/%s-%s.log' %
+                                      (LOGDIR, name, dateString))
         handler.setFormatter(logging.Formatter(FORMAT))
         logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
