@@ -5,6 +5,10 @@ Master daemon for the Drogon Quadcopter. It is as a Python application
 providing high-level control and operation of the Drogon Quadcopter.
 Is intended to run on Drogon's Raspberry Pi.
 
+Uses RobotCore for communication between components. 
+
+See https://github.com/joemonti/robotcore
+
 
 Important
 ---------------------
