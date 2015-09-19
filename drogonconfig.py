@@ -24,16 +24,16 @@ class DrogonConfig(object):
         self.name = name
 
     def get(self, option):
-        self.cp.get(self.name, option)
+        return self.cp.get(self.name, option)
 
     def getint(self, option):
-        self.cp.getint(self.name, option)
+        return self.cp.getint(self.name, option)
 
     def getfloat(self, option):
-        self.cp.getfloat(self.name, option)
+        return self.cp.getfloat(self.name, option)
 
     def getboolean(self, option):
-        self.cp.getboolean(self.name, option)
+        return self.cp.getboolean(self.name, option)
 
     def items(self):
-        self.cp.items(self.name)
+        return self.cp.items(self.name)

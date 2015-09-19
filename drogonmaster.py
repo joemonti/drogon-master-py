@@ -90,7 +90,7 @@ class DrogonModuleManager(object):
 def main():
     dl = DrogonLogger()
 
-    dcp = DrogonConfigParser()
+    dcp = DrogonConfigParser('./conf')
     masterConfig = dcp.get_config('master')
 
     mm = DrogonModuleManager(dl, dcp, masterConfig)

@@ -29,11 +29,6 @@ import rcorelib.event as revent
 
 import drogonmodule
 
-SERVER_IP = "0.0.0.0"
-SERVER_PORT = 42112
-
-MAX_FPS = 5
-
 EVT_TYPE_CAMERA_TRIGGER = \
     revent.RCoreEventTypeBuilder('camera_trigger') \
     .build()
