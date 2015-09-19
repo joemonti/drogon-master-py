@@ -22,9 +22,10 @@ along with Drogon.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
 import picamera
-import socket
 import io
-import struct
+import threading
+
+import rcorelib.event as revent
 
 import drogonmodule
 
@@ -33,23 +34,40 @@ SERVER_PORT = 42112
 
 MAX_FPS = 5
 
+EVT_TYPE_CAMERA_TRIGGER = \
+    revent.RCoreEventTypeBuilder('camera_trigger') \
+    .build()
+
+EVT_TYPE_CAMERA_IMAGE = \
+    revent.RCoreEventTypeBuilder('camera_image') \
+    .add_bytea() \
+    .build()
+
 
 class CameraModule(drogonmodule.DrogonModuleRunnable):
     def __init__(self, *args, **kwargs):
         super(CameraModule, self).__init__(*args, **kwargs)
 
         self.logger = self.get_logger()
-        self.frame_delay = 1/MAX_FPS
+        self.trigger_condition = threading.Condition()
+
+        self.rc.register_event_type(EVT_TYPE_CAMERA_TRIGGER)
+        self.rc.register_event_type(EVT_TYPE_CAMERA_IMAGE)
+
+        self.rc.register_listener(EVT_TYPE_CAMERA_TRIGGER.name, self.trigger)
+
+    def trigger(self):
+        self.trigger_condition.acquire()
+        self.trigger_condition.notify()
+        self.trigger_condition.release()
 
     def run(self):
         while self.running:
             try:
-                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.bind((SERVER_IP, SERVER_PORT))
-                s.listen(1)
-                conn, addr = s.accept()
-                self.logger.debug('Connection Opened: %s' % (str(addr)))
-                connfile = conn.makefile('wb')
+                self.trigger_condition.acquire()
+                self.trigger_condition.wait()
+                self.trigger_condition.release()
+
                 with picamera.PiCamera() as camera:
                     camera.resolution = (640, 480)
                     camera.brightness = 60
@@ -57,29 +75,23 @@ class CameraModule(drogonmodule.DrogonModuleRunnable):
                     camera.start_preview()
                     time.sleep(2)
                     stream = io.BytesIO()
-                    lastFrame = time.time()
-                    for foo in camera.capture_continuous(stream, 'jpeg', use_video_port=True):
-                        connfile.write(struct.pack('>L', stream.tell()))
-                        connfile.flush()
-                        stream.seek(0)
-                        connfile.write(stream.read())
-                        connfile.flush()
+
+                    for foo in camera.capture_continuous(stream,
+                                                         'jpeg',
+                                                         use_video_port=True):
+                        image_data = stream.read()
+                        e = revent.RCoreEventBuilder(EVT_TYPE_CAMERA_IMAGE) \
+                            .add_bytea(image_data) \
+                            .build()
+
+                        self.rc.send(e)
+
                         stream.seek(0)
                         stream.truncate()
 
-                        resp = conn.recv(1)
-                        if not self.running or resp == None or len(resp) == 0 or ord(resp[0]) == 0x04:
-                            break
-                        elif ord(resp[0]) != 0x02:
-                            self.logger.warn('Invalid response: %s' % (resp))
-
-                        sleepTime = self.frame_delay - (time.time() - lastFrame)
-                        if sleepTime > 0.0:
-                            time.sleep(sleepTime)
-                        lastFrame = time.time()
-
-                self.logger.debug('Connection Closed: %s' % (str(addr)))
-                conn.close()
+                        self.trigger_condition.acquire()
+                        self.trigger_condition.wait()
+                        self.trigger_condition.release()
             except:
                 self.logger.exception("Exception in connection")
                 time.sleep(5)

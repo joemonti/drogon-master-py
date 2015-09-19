@@ -22,6 +22,7 @@ along with Drogon.  If not, see <http://www.gnu.org/licenses/>.
 
 import drogonmodule
 
+
 class DummyModule(drogonmodule.DrogonModule):
     def __init__(self, *args, **kwargs):
         super(DummyModule, self).__init__(*args, **kwargs)
@@ -30,4 +31,3 @@ class DummyModule(drogonmodule.DrogonModule):
 
 # THIS EXPOSES THE MODULE CLASS TO THE MODULE LOADER
 moduleclass = DummyModule
-

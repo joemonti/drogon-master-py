@@ -27,12 +27,16 @@ import importlib
 
 import drogonmodule
 
+import rcorelib
+
 import modules
 # from modules import *
 
 from drogonlogger import DrogonLogger
 
 MODULES_FNAME = 'modules.load'
+
+RCORE_HOST = 'localhost'
 
 
 class DrogonModuleManager(object):
@@ -52,9 +56,13 @@ class DrogonModuleManager(object):
 
     def load_module(self, module_name):
         self.logger.debug('Module %s Loading' % (module_name))
+
+        rc = rcorelib.RCoreClient(RCORE_HOST, module_name)
+
         importlib.import_module('modules.%s' % (module_name))
         m = modules.__dict__[module_name].moduleclass(name=module_name,
-                                                      dl=self.dl)
+                                                      dl=self.dl,
+                                                      rc=rc)
 
         if isinstance(m, drogonmodule.DrogonModuleRunnable):
             m.start()
@@ -103,6 +111,7 @@ def main():
             interruptTime = time.time()
             mm.shutdown()
             time.sleep(1)
+
 
 if __name__ == "__main__":
     main()

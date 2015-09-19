@@ -22,10 +22,45 @@ along with Drogon.  If not, see <http://www.gnu.org/licenses/>.
 
 import serial
 
+import rcorelib.event as revent
+
 import drogonmodule
 
 SERIAL_PORT = '/dev/ttyAMA0'
 SERIAL_BAUD = 9600
+
+EVT_TYPE_ARDUINO_ARM = \
+    revent.RCoreEventTypeBuilder('arduino_arm') \
+    .add_byte() \
+    .build()
+
+EVT_TYPE_ARDUINO_MOTOR = \
+    revent.RCoreEventTypeBuilder('arduino_motor') \
+    .add_float() \
+    .build()
+
+EVT_TYPE_ARDUINO_LOG = \
+    revent.RCoreEventTypeBuilder('arduino_log') \
+    .add_int() \
+    .add_int() \
+    .add_int() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .build()
 
 
 class ArduinoModule(drogonmodule.DrogonModuleRunnable):

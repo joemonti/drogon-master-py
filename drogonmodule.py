@@ -27,6 +27,7 @@ class DrogonModule(object):
     def __init__(self, *args, **kwargs):
         self.name = kwargs['name']
         self.dl = kwargs['dl']
+        self.rc = kwargs['rc']
 
         self.loggers = {}
 
@@ -38,7 +39,7 @@ class DrogonModule(object):
         return self.dl.get_logger(loggerName)
 
     def shutdown(self):
-        pass
+        self.rc.close()
 
 
 class DrogonModuleRunnable(DrogonModule):
