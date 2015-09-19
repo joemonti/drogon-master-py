@@ -21,25 +21,41 @@ along with Drogon.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import threading
+import rcorelib
 
 
 class DrogonModule(object):
     def __init__(self, *args, **kwargs):
         self.name = kwargs['name']
         self.dl = kwargs['dl']
-        self.rc = kwargs['rc']
+        self.masterConfig = kwargs['masterConfig']
+        self.config = kwargs['config']
 
+        self.rcore = None
         self.loggers = {}
 
     def get_logger(self, name=''):
+        """Get Logger
+            - name   Optional name of logger"""
         loggerName = self.name
         if len(name) > 0:
             loggerName = '%s-%s' % (loggerName, name)
 
         return self.dl.get_logger(loggerName)
 
+    def init_rcore(self):
+        """Get RobotCore client, creating if not yet created"""
+        if self.rcore is None:
+            host = self.masterConfig.get('rcore_host')
+            self.rcore = rcorelib.RCoreClient(host, self.name)
+
+        return self.rcore
+
     def shutdown(self):
-        self.rc.close()
+        """"Shutdown module, including RobotCore client if opened"""
+        if self.rcore is not None:
+            self.rcore.close()
+            self.rcore = None
 
 
 class DrogonModuleRunnable(DrogonModule):

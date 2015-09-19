@@ -33,36 +33,36 @@ import modules
 # from modules import *
 
 from drogonlogger import DrogonLogger
-
-MODULES_FNAME = 'modules.load'
-
-RCORE_HOST = 'localhost'
+from drogonconfig import DrogonConfigParser
 
 
 class DrogonModuleManager(object):
-    def __init__(self, dl):
+    def __init__(self, dl, dcp, masterConfig):
         self.logger = dl.get_logger('module-manager')
         self.dl = dl
+        self.dcp = dcp
+        self.masterConfig = masterConfig
+        self.moduleConfig = dcp.get_config('modules')
         self.modules = {}
 
     def get_module_list(self):
-        module_list = []
-        with open(MODULES_FNAME) as f:
-            for line in f:
-                line = line.strip()
-                if len(line) > 0 and line[0] != '#':
-                    module_list.append(line)
-        return module_list
+        return [
+            moduleName
+            for (moduleName, enabled)
+            in self.moduleConfig.items()
+            if enabled == 'true']
 
     def load_module(self, module_name):
         self.logger.debug('Module %s Loading' % (module_name))
 
-        rc = rcorelib.RCoreClient(RCORE_HOST, module_name)
+        config = self.dcp.get_config(module_name)
 
         importlib.import_module('modules.%s' % (module_name))
-        m = modules.__dict__[module_name].moduleclass(name=module_name,
-                                                      dl=self.dl,
-                                                      rc=rc)
+        m = modules.__dict__[module_name] \
+            .moduleclass(name=module_name,
+                         dl=self.dl,
+                         config=config,
+                         masterConfig=self.masterConfig)
 
         if isinstance(m, drogonmodule.DrogonModuleRunnable):
             m.start()
@@ -89,7 +89,11 @@ class DrogonModuleManager(object):
 
 def main():
     dl = DrogonLogger()
-    mm = DrogonModuleManager(dl)
+
+    dcp = DrogonConfigParser()
+    masterConfig = dcp.get_config('master')
+
+    mm = DrogonModuleManager(dl, dcp, masterConfig)
     mm.load_modules()
 
     interrupted = False

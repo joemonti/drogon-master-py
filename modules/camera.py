@@ -51,10 +51,12 @@ class CameraModule(drogonmodule.DrogonModuleRunnable):
         self.logger = self.get_logger()
         self.trigger_condition = threading.Condition()
 
-        self.rc.register_event_type(EVT_TYPE_CAMERA_TRIGGER)
-        self.rc.register_event_type(EVT_TYPE_CAMERA_IMAGE)
+        self.init_rcore()
+        self.rcore.register_event_type(EVT_TYPE_CAMERA_TRIGGER)
+        self.rcore.register_event_type(EVT_TYPE_CAMERA_IMAGE)
 
-        self.rc.register_listener(EVT_TYPE_CAMERA_TRIGGER.name, self.trigger)
+        self.rcore.register_listener(EVT_TYPE_CAMERA_TRIGGER.name,
+                                     self.trigger)
 
     def trigger(self):
         self.trigger_condition.acquire()
@@ -84,7 +86,7 @@ class CameraModule(drogonmodule.DrogonModuleRunnable):
                             .add_bytea(image_data) \
                             .build()
 
-                        self.rc.send(e)
+                        self.rcore.send(e)
 
                         stream.seek(0)
                         stream.truncate()
