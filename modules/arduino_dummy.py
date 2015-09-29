@@ -20,17 +20,9 @@ along with Drogon.  If not, see <http://www.gnu.org/licenses/>.
 @copyright: 2014 Joseph Monti All Rights Reserved, http://joemonti.org/
 """
 
-import serial
-import threading
-import traceback
-import time
-
 import rcorelib.event as revent
 
 import drogonmodule
-
-SERIAL_PORT = '/dev/ttyAMA0'
-SERIAL_BAUD = 9600
 
 EVT_TYPE_ARDUINO_ARM = \
     revent.RCoreEventTypeBuilder('arduino_arm') \
@@ -66,9 +58,9 @@ EVT_TYPE_ARDUINO_LOG = \
     .build()
 
 
-class ArduinoModule(drogonmodule.DrogonModuleRunnable):
+class ArduinoDummyModule(drogonmodule.DrogonModuleRunnable):
     def __init__(self, *args, **kwargs):
-        super(ArduinoModule, self).__init__(*args, **kwargs)
+        super(ArduinoDummyModule, self).__init__(*args, **kwargs)
 
         self.logger = self.get_logger()
         self.loggerDebug = self.get_logger('debug')
@@ -86,37 +78,19 @@ class ArduinoModule(drogonmodule.DrogonModuleRunnable):
         self.rcore.register_listener(EVT_TYPE_ARDUINO_MOTOR.name,
                                      self.update_motor)
 
-        self.serialLock = threading.RLock()
-        self.ser = serial.Serial(SERIAL_PORT, SERIAL_BAUD, timeout=0)
-        self.ser.open()
-
     def update_arm(self, event):
         reader = event.reader()
         value = reader.read_byte()
-        self.serialLock.acquire()
-        try:
-            self.ser.write(b'A%d\n' % value)
-            self.ser.flush()
-        except:
-            self.logger.error("Error reading/writing serial: %s",
-                              traceback.format_exc())
-        finally:
-            self.serialLock.release()
+        self.loggerDebug.debug(b'A%d\n' % value)
 
     def update_motor(self, event):
         reader = event.reader()
         value = reader.read_float()
-        self.serialLock.acquire()
-        try:
-            self.ser.write(b'M%f\n' % value)
-            self.ser.flush()
-        except:
-            self.logger.error("Error reading/writing serial: %s",
-                              traceback.format_exc())
-        finally:
-            self.serialLock.release()
+        self.loggerDebug.debug(b'M%f\n' % value)
 
     def run(self):
+        # TODO: Generate fake data
+        '''
         while self.running:
             self.serialLock.acquire()
             try:
@@ -142,7 +116,7 @@ class ArduinoModule(drogonmodule.DrogonModuleRunnable):
             else:
                 time.sleep(0.01)
 
-        self.ser.close()
+        '''
 
 # THIS EXPOSES THE MODULE CLASS TO THE MODULE LOADER
-moduleclass = ArduinoModule
+moduleclass = ArduinoDummyModule
