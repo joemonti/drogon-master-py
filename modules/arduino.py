@@ -42,6 +42,14 @@ EVT_TYPE_ARDUINO_MOTOR = \
     .add_float() \
     .build()
 
+EVT_TYPE_ARDUINO_PID = \
+    revent.RCoreEventTypeBuilder('arduino_pid') \
+    .add_byte() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .build()
+
 EVT_TYPE_ARDUINO_LOG = \
     revent.RCoreEventTypeBuilder('arduino_log') \
     .add_int() \
@@ -78,6 +86,7 @@ class ArduinoModule(drogonmodule.DrogonModuleRunnable):
         self.init_rcore()
         self.rcore.register_event_type(EVT_TYPE_ARDUINO_ARM)
         self.rcore.register_event_type(EVT_TYPE_ARDUINO_MOTOR)
+        self.rcore.register_event_type(EVT_TYPE_ARDUINO_PID)
         self.rcore.register_event_type(EVT_TYPE_ARDUINO_LOG)
 
         self.rcore.register_listener(EVT_TYPE_ARDUINO_ARM.name,
@@ -85,6 +94,9 @@ class ArduinoModule(drogonmodule.DrogonModuleRunnable):
 
         self.rcore.register_listener(EVT_TYPE_ARDUINO_MOTOR.name,
                                      self.update_motor)
+
+        self.rcore.register_listener(EVT_TYPE_ARDUINO_PID.name,
+                                     self.update_pid)
 
         self.serialLock = threading.RLock()
         self.ser = serial.Serial(SERIAL_PORT, SERIAL_BAUD, timeout=0)
@@ -106,6 +118,22 @@ class ArduinoModule(drogonmodule.DrogonModuleRunnable):
     def update_motor(self, event):
         reader = event.reader()
         value = reader.read_float()
+        self.serialLock.acquire()
+        try:
+            self.ser.write(b'M%f\n' % value)
+            self.ser.flush()
+        except:
+            self.logger.error("Error reading/writing serial: %s",
+                              traceback.format_exc())
+        finally:
+            self.serialLock.release()
+
+    def update_pid(self, event):
+        reader = event.reader()
+        ptype = read.read_byte()
+        kp = reader.read_float()
+        ki = reader.read_float()
+        kd = reader.read_float()
         self.serialLock.acquire()
         try:
             self.ser.write(b'M%f\n' % value)
