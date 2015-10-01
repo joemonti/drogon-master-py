@@ -34,6 +34,14 @@ EVT_TYPE_ARDUINO_MOTOR = \
     .add_float() \
     .build()
 
+EVT_TYPE_ARDUINO_PID = \
+    revent.RCoreEventTypeBuilder('arduino_pid') \
+    .add_string() \
+    .add_float() \
+    .add_float() \
+    .add_float() \
+    .build()
+
 EVT_TYPE_ARDUINO_LOG = \
     revent.RCoreEventTypeBuilder('arduino_log') \
     .add_int() \
@@ -70,6 +78,7 @@ class ArduinoDummyModule(drogonmodule.DrogonModuleRunnable):
         self.init_rcore()
         self.rcore.register_event_type(EVT_TYPE_ARDUINO_ARM)
         self.rcore.register_event_type(EVT_TYPE_ARDUINO_MOTOR)
+        self.rcore.register_event_type(EVT_TYPE_ARDUINO_PID)
         self.rcore.register_event_type(EVT_TYPE_ARDUINO_LOG)
 
         self.rcore.register_listener(EVT_TYPE_ARDUINO_ARM.name,
@@ -78,14 +87,25 @@ class ArduinoDummyModule(drogonmodule.DrogonModuleRunnable):
         self.rcore.register_listener(EVT_TYPE_ARDUINO_MOTOR.name,
                                      self.update_motor)
 
+        self.rcore.register_listener(EVT_TYPE_ARDUINO_PID.name,
+                                     self.update_pid)
+
     def update_arm(self, event):
         reader = event.reader()
-        value = reader.read_byte()
+        value = reader.read()
         self.loggerDebug.debug(b'A%d\n' % value)
+
+    def update_pid(self, event):
+        reader = event.reader()
+        ptype = reader.read()
+        kp = reader.read()
+        ki = reader.read()
+        kd = reader.read()
+        self.loggerDebug.debug(b'P\t%s\t%f\t%f\t%f\n' % (ptype, kp, ki, kd))
 
     def update_motor(self, event):
         reader = event.reader()
-        value = reader.read_float()
+        value = reader.read()
         self.loggerDebug.debug(b'M%f\n' % value)
 
     def run(self):

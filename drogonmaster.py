@@ -27,8 +27,6 @@ import importlib
 
 import drogonmodule
 
-import rcorelib
-
 import modules
 # from modules import *
 

@@ -44,7 +44,7 @@ EVT_TYPE_ARDUINO_MOTOR = \
 
 EVT_TYPE_ARDUINO_PID = \
     revent.RCoreEventTypeBuilder('arduino_pid') \
-    .add_byte() \
+    .add_string() \
     .add_float() \
     .add_float() \
     .add_float() \
@@ -104,7 +104,7 @@ class ArduinoModule(drogonmodule.DrogonModuleRunnable):
 
     def update_arm(self, event):
         reader = event.reader()
-        value = reader.read_byte()
+        value = reader.read()
         self.serialLock.acquire()
         try:
             self.ser.write(b'A%d\n' % value)
@@ -117,7 +117,7 @@ class ArduinoModule(drogonmodule.DrogonModuleRunnable):
 
     def update_motor(self, event):
         reader = event.reader()
-        value = reader.read_float()
+        value = reader.read()
         self.serialLock.acquire()
         try:
             self.ser.write(b'M%f\n' % value)
@@ -130,13 +130,13 @@ class ArduinoModule(drogonmodule.DrogonModuleRunnable):
 
     def update_pid(self, event):
         reader = event.reader()
-        ptype = read.read_byte()
-        kp = reader.read_float()
-        ki = reader.read_float()
-        kd = reader.read_float()
+        ptype = reader.read()
+        kp = reader.read()
+        ki = reader.read()
+        kd = reader.read()
         self.serialLock.acquire()
         try:
-            self.ser.write(b'M%f\n' % value)
+            self.ser.write(b'P\t%s\t%f\t%f\t%f\n' % (ptype, kp, ki, kd))
             self.ser.flush()
         except:
             self.logger.error("Error reading/writing serial: %s",

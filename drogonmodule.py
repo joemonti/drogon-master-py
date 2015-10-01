@@ -48,6 +48,7 @@ class DrogonModule(object):
         if self.rcore is None:
             host = self.masterConfig.get('rcore_host')
             self.rcore = rcorelib.RCoreClient(host, self.name)
+            self.rcore.start()
 
         return self.rcore
 
