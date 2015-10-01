@@ -30,6 +30,7 @@ class DrogonModule(object):
         self.dl = kwargs['dl']
         self.masterConfig = kwargs['masterConfig']
         self.config = kwargs['config']
+        self.zmqctx = kwargs['zmqctx']
 
         self.rcore = None
         self.loggers = {}
@@ -47,7 +48,7 @@ class DrogonModule(object):
         """Get RobotCore client, creating if not yet created"""
         if self.rcore is None:
             host = self.masterConfig.get('rcore_host')
-            self.rcore = rcorelib.RCoreClient(host, self.name)
+            self.rcore = rcorelib.RCoreClient(host, self.name, self.zmqctx)
             self.rcore.start()
 
         return self.rcore

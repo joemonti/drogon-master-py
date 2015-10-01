@@ -24,6 +24,7 @@ along with Drogon.  If not, see <http://www.gnu.org/licenses/>.
 # import sys
 import time
 import importlib
+import zmq
 
 import drogonmodule
 
@@ -42,6 +43,7 @@ class DrogonModuleManager(object):
         self.masterConfig = masterConfig
         self.moduleConfig = dcp.get_config('modules')
         self.modules = {}
+        self.zmqctx = zmq.Context()
 
     def get_module_list(self):
         return [
@@ -60,7 +62,8 @@ class DrogonModuleManager(object):
             .moduleclass(name=module_name,
                          dl=self.dl,
                          config=config,
-                         masterConfig=self.masterConfig)
+                         masterConfig=self.masterConfig,
+                         zmqctx=self.zmqctx)
 
         if isinstance(m, drogonmodule.DrogonModuleRunnable):
             m.start()
@@ -78,6 +81,7 @@ class DrogonModuleManager(object):
         for (name, m) in self.modules.iteritems():
             self.logger.debug('Module %s Shutting Down' % (name))
             m.shutdown()
+        self.zmqctx.term()
 
     def running_modules(self):
         return len([1 for m in self.modules.iteritems()
